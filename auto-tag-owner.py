@@ -33,7 +33,7 @@ def get_tags(instance_id):
     return instance
 
 
-def get_run_instances_username(instance_id):
+def get_run_instances_username(instance_id, date):
     '''
     Events can only be looked up by one attribute. That sucks :(
     Also things get throttled here at one call per second.
@@ -59,7 +59,7 @@ def get_run_instances_username(instance_id):
                 'AttributeValue': instance_id
             }
         ],
-        StartTime=datetime(2017, 12, 01)
+        StartTime=datetime(date)
     )
 
     for event in events['Events']:
@@ -98,10 +98,11 @@ def lambda_handler(event, context):
         ec2_resource = session.resource('ec2')
         ct_client = session.client('cloudtrail')
 
+    date = event['date'] # Make sure it's in YYYY MM DD format
     instances = get_instances()
 
     for instance_id in instances:
-        username = get_run_instances_username(instance_id)
+        username = get_run_instances_username(instance_id, date)
         tag_instance(username, instance_id)
 
     logging.info("Tagged the following instances: {0}.format(instances)")
