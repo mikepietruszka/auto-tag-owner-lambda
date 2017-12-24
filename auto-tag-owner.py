@@ -71,6 +71,7 @@ def get_run_instances_username(instance_id, date):
 def tag_instance(username, instance_id):
     try:
         if get_instance_status(instance_id) == 'running':
+            # Tag the instance
             instance.create_tags(
                 DryRun=False,
                 Tags=[
@@ -80,6 +81,28 @@ def tag_instance(username, instance_id):
                     }
                 ]
             )
+
+            # Tag the attached volumes
+            for vol in instance.volumes.all():
+                vol.create_tags(
+                    Tags=[
+                        {
+                            'Key': 'owner',
+                            'Value': username
+                        }
+                    ]
+                )
+
+            # Tag the attached ENIs (network interfaces)
+            for eni in instance.network_interfaces:
+                eni.create_tags(
+                    Tags=[
+                        {
+                            'Key': 'owner',
+                            'Value': username
+                        }
+                    ]
+                )
     except:
         logging.error("Failed to tag instance {0}".format(instance_id))
     else:
