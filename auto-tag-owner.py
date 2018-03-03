@@ -59,7 +59,7 @@ def get_run_instances_username(instance_id, date):
                 'AttributeValue': instance_id
             }
         ],
-        StartTime=datetime(date)
+        StartTime=date
     )
 
     for event in events['Events']:
@@ -113,7 +113,7 @@ def tag_instance(username, instance_id):
 
 def lambda_handler(event, context):
     try:
-        session = boto3.session.Session(region_name=event['region_name'])
+        session = boto3.session.Session(region_name='us-west-2')
     except:
         raise Exception("ERROR: error")
     else:    
@@ -121,7 +121,8 @@ def lambda_handler(event, context):
         ec2_resource = session.resource('ec2')
         ct_client = session.client('cloudtrail')
 
-    date = event['date'] # Make sure it's in YYYY MM DD format
+    #date = event['date'] # Make sure it's in YYYY, MM, DD format
+    date = datetime.now().strftime('%Y, %m, %d')
     instances = get_instances()
 
     for instance_id in instances:
